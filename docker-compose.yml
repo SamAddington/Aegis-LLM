@@ -1,0 +1,94 @@
+# Aegis-LLM  --  Pentesting Laboratory
+# --------------------------------------------------------------------------
+# Default mode: the app talks to a *native* Ollama running on the host at
+# host.docker.internal:11434. This avoids port conflicts for users who
+# already installed the Ollama desktop app and have their models pulled.
+#
+# Optional mode: a containerized Ollama with its own persistent volume.
+# Enable it with `docker compose --profile bundled-ollama up --build`.
+# (If you use this mode, make sure the host's native Ollama is stopped
+# first so port 11434 is free.)
+#
+# Services:
+#   app           : FastAPI backend.
+#   web           : React build served by nginx; proxies /api -> app.
+#   ollama-server : (profile: bundled-ollama) Ollama in a container.
+# --------------------------------------------------------------------------
+
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aegis-backend
+    restart: unless-stopped
+    environment:
+      # host.docker.internal resolves to the host on Docker Desktop (Win/Mac)
+      # and is shimmed to the gateway via `extra_hosts` for Linux.
+      OLLAMA_HOST: "${OLLAMA_HOST:-http://host.docker.internal:11434}"
+      AEGIS_DEFAULT_MODEL: "${AEGIS_DEFAULT_MODEL:-llama3}"
+      AEGIS_GUARD_MODEL: "${AEGIS_GUARD_MODEL:-llama3}"
+      AEGIS_ALLOWED_ORIGINS: "http://localhost:3000,http://web"
+      AEGIS_JWT_SECRET: "${AEGIS_JWT_SECRET:-change-me-in-production}"
+      AEGIS_ADMIN_USER: "${AEGIS_ADMIN_USER:-admin}"
+      AEGIS_ADMIN_PASS: "${AEGIS_ADMIN_PASS:-admin}"
+      AEGIS_STUDENT_USER: "${AEGIS_STUDENT_USER:-student}"
+      AEGIS_STUDENT_PASS: "${AEGIS_STUDENT_PASS:-student}"
+      AEGIS_ALLOW_REGISTRATION: "${AEGIS_ALLOW_REGISTRATION:-true}"
+      AEGIS_STATE_DIR: "/app/state"
+    ports:
+      # Host port 8001 (internal 8000) to avoid colliding with other local stacks.
+      # Swagger UI: http://localhost:8001/docs
+      - "8001:8000"
+    extra_hosts:
+      # Required on Linux; ignored (and harmless) on Docker Desktop.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Mount registry so instructors can hot-edit vulnerability content
+      # without rebuilding the image.
+      - ./backend/app/data:/app/app/data:ro
+      # Persistent state: SQLite users DB and runtime settings JSON.
+      - aegis-state:/app/state
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aegis-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+
+  # --- Optional: containerized Ollama (disabled by default) ----------------
+  # To use: `docker compose --profile bundled-ollama up --build`
+  # Requires the host's native Ollama to be stopped first (port 11434).
+  ollama-server:
+    image: ollama/ollama:latest
+    container_name: aegis-ollama
+    profiles: ["bundled-ollama"]
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    # deploy:                      # uncomment for NVIDIA GPU acceleration
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  ollama-models:
+    name: aegis-ollama-models
+  aegis-state:
+    name: aegis-state
