@@ -111,4 +111,47 @@ export const api = {
   // Dashboard
   getMetrics: () => request("/api/metrics/"),
   clearMetrics: () => request("/api/metrics/", { method: "DELETE" }),
+
+  // Compliance Hub
+  getComplianceTrace: () => request("/api/compliance/trace"),
+
+  // Audit (admin)
+  getAuditReportJson: (include_links = true) =>
+    request(`/api/audit/report?format=json&include_links=${include_links ? "true" : "false"}`),
+  getAuditReportMarkdown: (include_links = true) =>
+    request(`/api/audit/report?format=markdown&include_links=${include_links ? "true" : "false"}`),
+  getAuditReportPdfUrl: (include_links = true) =>
+    `${BASE}/api/audit/report?format=pdf&include_links=${include_links ? "true" : "false"}`,
+
+  // Output Sinks Lab (LLM05)
+  runOutputSinks: (payload) => request("/api/output-sinks/run", { method: "POST", body: payload }),
+
+  // Supply Chain Lab (LLM03 / ASI04)
+  supplyChainScan: () => request("/api/supply-chain/scan"),
+  supplyChainBaseline: () => request("/api/supply-chain/baseline", { method: "POST" }),
+  supplyChainLoadTools: (payload) =>
+    request("/api/supply-chain/tools/load", { method: "POST", body: payload }),
+
+  // Vector / Embedding Lab (LLM08)
+  vectorDocs: () => request("/api/vector-lab/docs"),
+  vectorPoison: (payload) => request("/api/vector-lab/poison", { method: "POST", body: payload }),
+  vectorRun: (payload) => request("/api/vector-lab/run", { method: "POST", body: payload }),
+
+  // Misinformation Lab (LLM09)
+  misinfoFacts: () => request("/api/misinformation/facts"),
+  misinfoRun: (payload) => request("/api/misinformation/run", { method: "POST", body: payload }),
+
+  // Multi-agent Lab (ASI07/08/10)
+  multiAgentRun: (payload) => request("/api/multi-agent/run", { method: "POST", body: payload }),
+
+  // BeaverTails Evaluation Lab
+  beavertailsSubset: () => request("/api/beavertails/subset"),
+  beavertailsRun: (payload) => request("/api/beavertails/run", { method: "POST", body: payload }),
+
+  // Privacy lab (LLM02)
+  privacyLabRun: (payload) => request("/api/privacy-lab/run", { method: "POST", body: payload }),
+
+  // Poisoning lab (LLM04)
+  poisoningInfo: () => request("/api/poisoning-lab/info"),
+  poisoningRun: (payload) => request("/api/poisoning-lab/run", { method: "POST", body: payload }),
 };

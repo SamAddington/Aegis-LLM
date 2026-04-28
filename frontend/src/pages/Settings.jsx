@@ -680,6 +680,13 @@ function LabTab({ settings, isAdmin, onSaved }) {
           onChange={upd("allow_rag_document_editing")}
           disabled={!isAdmin}
         />
+        <ToggleRow
+          label="Enable BeaverTails extended dataset (opt-in)"
+          help="If enabled, /api/beavertails/subset will merge beavertails_subset_extended.json. Admin-only; keep extended prompts out of the repo if they are high-risk."
+          checked={!!form.beavertails_extended_dataset_enabled}
+          onChange={upd("beavertails_extended_dataset_enabled")}
+          disabled={!isAdmin}
+        />
       </div>
 
       <Divider label="Rate limits & retention" />

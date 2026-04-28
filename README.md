@@ -27,12 +27,15 @@ pipeline on and off so students can watch the difference in real time.
 |---|---|---|
 | **Education Hub** (LLM Basics primer + vulnerability registry) | All | An 8-chapter primer on *why* LLMs get attacked + deep-dive cards for LLM01–LLM15 with worked examples and curated further reading |
 | **Prompt Engineering Lab** (Attack Lab) | LLM01 | 16 attack techniques across 5 families — see below |
-| **Data Privacy Lab** (Education Hub) | LLM02, LLM04 | System-prompt leaks, Membership inference, Training-data poisoning |
+| **Privacy / Secrets Lab** | LLM02 | Sensitive info disclosure: system-prompt leaks + reference-text leaks, with redaction/leak checks |
+| **Poisoning Lab** | LLM04 | Simulated training-data poisoning/backdoor trigger, with mitigation mode |
 | **Resource Stress Lab** | LLM10 | Model Denial of Service via concurrency & max-length prompts |
 | **Agentic Sandbox** | LLM08 | Excessive Agency with a mocked shell tool |
 | **Multi-Modal Hub** | LLM01 (multimodal) | Theory + mitigation code for image/audio prompt injection |
 | **Visualization Dashboard** | — | Success rates, guardrail trigger rates, latency over time |
 | **Admin Settings** | — | Live-tunable LLM sampling, per-layer guardrail toggles, classroom policy, user management |
+| **Compliance Hub** | — | Traceability graph mapping labs/controls to OWASP LLM 2025, OWASP Agents 2026, NIST AI RMF, MITRE ATLAS, BeaverTails |
+| **Audit (AISecOps)** | — | Admin-only audit artifacts (JSON/Markdown/PDF) with per-framework compliance scores and itemized node status |
 
 ### Education Hub — LLM Vulnerability Basics primer
 
@@ -129,6 +132,45 @@ UI bounds are enforced server-side.
 Persisted to `state/runtime_settings.json`. Unknown keys in the persisted
 file are ignored on load and missing keys fall back to dataclass defaults,
 so state files from older deploys are forward-compatible.
+
+### BeaverTails extended dataset (opt-in)
+
+The BeaverTails Evaluation Lab ships with a small offline subset:
+
+- `backend/app/data/beavertails_subset.json`
+
+Instructors can **opt-in** to an additional file:
+
+- `backend/app/data/beavertails_subset_extended.json`
+
+Enable it in **Admin → Settings → Lab → “Enable BeaverTails extended dataset (opt-in)”**.
+When enabled, `/api/beavertails/subset` merges the base and extended samples, and
+Compliance Hub coverage reflects any additional `BT.*` categories present.
+
+---
+
+## Audit (AISecOps) — generating compliance reports
+
+Admins can generate a scored, itemized audit report derived from the Compliance
+Hub trace graph.
+
+**In the UI**
+
+1. Log in as **admin**.
+2. (Optional) Set audit scope in **Admin → Settings** (models/guardrails/datasets).
+3. Review traceability in **Admin → Compliance Hub**.
+4. Generate artifacts in **Admin → Audit**:
+   - JSON (automation-friendly)
+   - Markdown (wiki/PR-friendly)
+   - PDF (stakeholder-ready)
+
+**Via API**
+
+- `GET /api/audit/report?format=json&include_links=true` *(admin)*
+- `GET /api/audit/report?format=markdown&include_links=true` *(admin)*
+- `GET /api/audit/report?format=pdf&include_links=true` *(admin)*
+
+`include_links=true` embeds scenario/control/evidence pointers for traceability.
 
 ---
 
@@ -269,8 +311,11 @@ Aegis-LLM/
 │       │   ├── agentic.py
 │       │   ├── stress.py
 │       │   ├── auth.py                JWT login / whoami
+│       │   ├── audit.py               AISecOps audit report endpoint
 │       │   ├── users.py               admin user CRUD
 │       │   ├── settings_router.py     llm/guardrails/agentic/lab settings
+│       │   ├── privacy_lab.py         LLM02 sensitive info disclosure lab
+│       │   ├── poisoning_lab.py       LLM04 poisoning/backdoor simulation
 │       │   └── metrics_router.py
 │       └── services/
 │           ├── ollama_client.py    httpx-based async Ollama client
@@ -282,6 +327,7 @@ Aegis-LLM/
 │           ├── auth.py             bcrypt + JWT
 │           ├── user_store.py       SQLite-backed user store
 │           ├── settings_store.py   runtime-editable app settings
+│           ├── audit.py            audit report builder (JSON/MD/PDF)
 │           └── metrics.py          in-memory telemetry
 ├── frontend/
 │   ├── Dockerfile
@@ -306,6 +352,10 @@ Aegis-LLM/
 │           ├── StressLab.jsx
 │           ├── MultiModalHub.jsx
 │           ├── Settings.jsx          ← 5-tab admin console
+│           ├── ComplianceHub.jsx     ← framework mapping + coverage
+│           ├── AuditHub.jsx          ← AISecOps audit workflow + report export
+│           ├── PrivacyLab.jsx
+│           ├── PoisoningLab.jsx
 │           ├── Login.jsx
 │           └── Dashboard.jsx
 ├── docker-compose.yml
@@ -384,6 +434,11 @@ Aegis-LLM/
 | `POST` | `/api/stress/run` | Run the DoS harness |
 | `GET`  | `/api/metrics/` | Aggregate dashboard metrics |
 | `DELETE` | `/api/metrics/` | Reset dashboard |
+| `GET`  | `/api/compliance/trace` | Traceability graph + coverage status |
+| `GET`  | `/api/audit/report` | Audit report export (JSON/Markdown/PDF) *(admin)* |
+| `POST` | `/api/privacy-lab/run` | Sensitive info disclosure lab (LLM02) |
+| `GET`  | `/api/poisoning-lab/info` | Poisoning lab info (LLM04) |
+| `POST` | `/api/poisoning-lab/run` | Poisoning/backdoor simulation (LLM04) |
 
 Swagger UI is always available at **http://localhost:8001/docs** (in docker) or
 **http://localhost:8000/docs** (running uvicorn directly without docker).
