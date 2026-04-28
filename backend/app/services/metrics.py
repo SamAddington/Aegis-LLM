@@ -18,20 +18,30 @@ _events: deque[dict[str, Any]] = deque(maxlen=_MAX_EVENTS)
 _lock = threading.Lock()
 
 
-def record(response: AttackResponse) -> None:
+def record_event(event: dict[str, Any]) -> None:
+    """Record a telemetry event.
+
+    Backward-compatible with the original Attack Lab metrics. Additional labs
+    may emit events with the same keys so the dashboard can aggregate them
+    without schema migrations.
+    """
     with _lock:
-        _events.append(
-            {
-                "attack_type": response.attack_type.value,
-                "model": response.model,
-                "latency_ms": response.latency_ms,
-                "tokens": response.token_count,
-                "success": response.success_heuristic,
-                "mitigation_enabled": response.guardrail.enabled,
-                "input_blocked": response.guardrail.input_blocked,
-                "output_blocked": response.guardrail.output_blocked,
-            }
-        )
+        _events.append(event)
+
+
+def record(response: AttackResponse) -> None:
+    record_event(
+        {
+            "attack_type": response.attack_type.value,
+            "model": response.model,
+            "latency_ms": response.latency_ms,
+            "tokens": response.token_count,
+            "success": response.success_heuristic,
+            "mitigation_enabled": response.guardrail.enabled,
+            "input_blocked": response.guardrail.input_blocked,
+            "output_blocked": response.guardrail.output_blocked,
+        }
+    )
 
 
 def snapshot() -> dict[str, Any]:

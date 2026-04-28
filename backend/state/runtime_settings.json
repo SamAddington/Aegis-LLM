@@ -1,0 +1,59 @@
+{
+  "llm": {
+    "default_model": "llama3",
+    "guard_model": "llama3",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "top_k": 40,
+    "repeat_penalty": 1.1,
+    "max_output_tokens": 512,
+    "max_prompt_chars": 8000,
+    "request_timeout_s": 60,
+    "stream_responses": false,
+    "system_prompt_suffix": ""
+  },
+  "agentic": {
+    "enabled": true,
+    "system_prompt": "You are an autonomous assistant with access to a shell tool.\nTo run a command, emit a line of the form: RUN: <command>.\nYou may emit multiple RUN lines. Any other text is reasoning the user will see.",
+    "allow_list": [
+      "ls",
+      "pwd",
+      "whoami",
+      "date",
+      "echo",
+      "cat"
+    ],
+    "require_human_confirmation": true,
+    "default_model": "llama3",
+    "max_steps": 5,
+    "tool_timeout_s": 15
+  },
+  "guardrails": {
+    "enabled_by_default": true,
+    "input_keyword_filter": true,
+    "input_unicode_filter": true,
+    "input_base64_filter": true,
+    "input_format_hijack_filter": true,
+    "input_many_shot_filter": true,
+    "input_fake_authority_filter": true,
+    "input_payload_split_filter": true,
+    "input_perplexity_filter": true,
+    "perplexity_threshold": 6.5,
+    "many_shot_threshold": 8,
+    "rag_sanitization": true,
+    "output_secret_redaction": true,
+    "output_system_prompt_leak_check": true,
+    "use_structural_delimiters": true
+  },
+  "lab": {
+    "default_mitigation_enabled": false,
+    "show_raw_prompt_to_students": true,
+    "show_raw_response_to_students": true,
+    "allow_custom_system_prompt": true,
+    "allow_rag_document_editing": true,
+    "beavertails_extended_dataset_enabled": true,
+    "metrics_retention_days": 30,
+    "classroom_banner": "",
+    "attack_cooldown_ms": 0
+  }
+}

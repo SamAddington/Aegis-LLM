@@ -108,7 +108,37 @@ def contains_injection_phrases(text: str) -> list[str]:
     # Normalize Unicode so homoglyphs collapse to their ASCII equivalents
     # (e.g. Cyrillic і -> Latin i via NFKC + explicit mapping below).
     normalized = _normalize_for_detection(text).lower()
-    return [flag for flag in INJECTION_RED_FLAGS if flag in normalized]
+
+    # Extra normalizations for common evasion patterns used in the lab:
+    # - leetspeak: digits/symbols substituted for letters
+    # - character stream: spaces inserted between characters
+    leet_map = str.maketrans(
+        {
+            "0": "o",
+            "1": "i",
+            "3": "e",
+            "4": "a",
+            "5": "s",
+            "7": "t",
+            "@": "a",
+            "$": "s",
+            "!": "i",
+        }
+    )
+    leet_normalized = normalized.translate(leet_map)
+    stream_normalized = normalized.replace(" ", "")
+
+    hits: set[str] = set()
+    for flag in INJECTION_RED_FLAGS:
+        compact_flag = flag.replace(" ", "")
+        if (
+            flag in normalized
+            or flag in leet_normalized
+            or flag in stream_normalized
+            or compact_flag in stream_normalized
+        ):
+            hits.add(flag)
+    return sorted(hits)
 
 
 # Cyrillic-to-Latin lookalikes used in homoglyph smuggling.

@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "version": "0.1.0",
+    "note": "Control catalog used by Compliance Hub. Each control should map to code + config keys."
+  },
+  "controls": [
+    {
+      "id": "CTRL.GUARD.INPUT.KEYWORD",
+      "name": "Input keyword filter",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_keyword_filter"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::contains_injection_phrases" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.UNICODE",
+      "name": "Unicode smuggling detection",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_unicode_filter"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::_normalize_for_detection" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.BASE64",
+      "name": "Base64 decode + scan",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_base64_filter"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::decode_smuggled_payloads" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.MANYSHOT",
+      "name": "Many-shot stuffing detector",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_many_shot_filter", "guardrails.many_shot_threshold"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::detects_many_shot_stuffing" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.FAKE_AUTHORITY",
+      "name": "Fake authority / policy puppetry detector",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_fake_authority_filter"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::detects_fake_authority" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.PAYLOAD_SPLIT",
+      "name": "Payload splitting detector",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_payload_split_filter"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::detects_payload_splitting" }]
+    },
+    {
+      "id": "CTRL.GUARD.INPUT.PERPLEXITY",
+      "name": "Perplexity proxy gate",
+      "type": "guardrail",
+      "config_keys": ["guardrails.input_perplexity_filter", "guardrails.perplexity_threshold"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::perplexity_proxy" }]
+    },
+    {
+      "id": "CTRL.RAG.SANITIZE",
+      "name": "RAG document sanitization",
+      "type": "mitigation",
+      "config_keys": ["guardrails.rag_sanitization"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::sanitize_document" }]
+    },
+    {
+      "id": "CTRL.PROMPT.DELIMITERS",
+      "name": "Structural delimiters",
+      "type": "mitigation",
+      "config_keys": ["guardrails.use_structural_delimiters"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::build_delimited_prompt" }]
+    },
+    {
+      "id": "CTRL.GUARD.OUTPUT.REDACTION",
+      "name": "Output secret redaction",
+      "type": "guardrail",
+      "config_keys": ["guardrails.output_secret_redaction"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::redact_secrets" }]
+    },
+    {
+      "id": "CTRL.GUARD.OUTPUT.SYSLEAK",
+      "name": "System prompt leak check",
+      "type": "guardrail",
+      "config_keys": ["guardrails.output_system_prompt_leak_check"],
+      "evidence": [{ "type": "code", "pointer": "backend/app/services/guardrails.py::check_output" }]
+    },
+    {
+      "id": "CTRL.LAB.POLICY.LOCK_SYSTEM_PROMPT",
+      "name": "Lock system prompt in UI",
+      "type": "policy",
+      "config_keys": ["lab.allow_custom_system_prompt"],
+      "evidence": [{ "type": "ui", "pointer": "frontend/src/pages/AttackLab.jsx" }]
+    }
+  ]
+}
+

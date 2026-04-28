@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "framework": "MITRE ATLAS",
+    "version": "rolling",
+    "source_url": "https://atlas.mitre.org/"
+  },
+  "nodes": [
+    { "id": "AML.T0051", "name": "LLM Prompt Injection" }
+  ]
+}
+

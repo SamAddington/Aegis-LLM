@@ -70,6 +70,7 @@ class LabUpdate(BaseModel):
     show_raw_response_to_students: bool | None = None
     allow_custom_system_prompt: bool | None = None
     allow_rag_document_editing: bool | None = None
+    beavertails_extended_dataset_enabled: bool | None = None
     metrics_retention_days: int | None = Field(default=None, ge=0, le=365)
     classroom_banner: str | None = Field(default=None, max_length=500)
     attack_cooldown_ms: int | None = Field(default=None, ge=0, le=60_000)

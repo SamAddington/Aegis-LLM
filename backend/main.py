@@ -20,14 +20,24 @@ from fastapi.responses import JSONResponse
 from app import __author__, __maintainer__, __status__, __version__
 from app.config import settings
 from app.routers import (
+    audit,
     agentic,
     attack_lab,
     auth as auth_router,
+    compliance,
     education,
     metrics_router,
+    output_sinks,
     settings_router,
     stress,
+    supply_chain,
     users,
+    vector_lab,
+    misinformation,
+    multi_agent,
+    beavertails_eval,
+    poisoning_lab,
+    privacy_lab,
 )
 from app.services import auth as auth_service
 from app.services import settings_store
@@ -75,6 +85,16 @@ app.include_router(users.router)                                 # admin-only en
 app.include_router(settings_router.router)                        # admin-only enforced inside
 app.include_router(attack_lab.router, dependencies=_require_user)
 app.include_router(education.router, dependencies=_require_user)
+app.include_router(compliance.router, dependencies=_require_user)
+app.include_router(audit.router, dependencies=_require_user)
+app.include_router(output_sinks.router, dependencies=_require_user)
+app.include_router(supply_chain.router, dependencies=_require_user)
+app.include_router(vector_lab.router, dependencies=_require_user)
+app.include_router(misinformation.router, dependencies=_require_user)
+app.include_router(multi_agent.router, dependencies=_require_user)
+app.include_router(beavertails_eval.router, dependencies=_require_user)
+app.include_router(privacy_lab.router, dependencies=_require_user)
+app.include_router(poisoning_lab.router, dependencies=_require_user)
 app.include_router(agentic.router, dependencies=_require_user)
 app.include_router(stress.router, dependencies=_require_user)
 app.include_router(metrics_router.router, dependencies=_require_user)

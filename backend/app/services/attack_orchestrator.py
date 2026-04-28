@@ -292,10 +292,199 @@ async def _run_crescendo(req: AttackRequest) -> AttackResponse:
     )
 
 
+async def _run_generic_multi_turn(
+    *,
+    req: AttackRequest,
+    turns: list[dict[str, str]],
+    label: str,
+    family: str,
+) -> AttackResponse:
+    """Generic multi-turn runner for scaffolds like linear/sequential/likert.
+
+    Each user turn is sent sequentially with full transcript included.
+    """
+    report = GuardrailReport(enabled=req.mitigation_enabled)
+    input_cfg = _input_guard_config()
+    output_cfg = _output_guard_config()
+    system_prompt = _compose_system_prompt(req)
+
+    conversation: list[ConversationTurn] = []
+    transcript_so_far = ""
+    last_result = None
+    total_latency = 0.0
+    total_tokens = 0
+
+    llm_cfg = settings_store.load().llm
+    for turn in turns:
+        user_text = turn["content"]
+
+        if req.mitigation_enabled:
+            verdict = guardrails.check_input(user_text, input_cfg)
+            if verdict.blocked:
+                report.input_blocked = True
+                report.reasons.extend(verdict.reasons)
+                conversation.append(ConversationTurn(role="user", content=user_text))
+                conversation.append(
+                    ConversationTurn(role="assistant", content="[Aegis guardrail blocked this turn]")
+                )
+                return AttackResponse(
+                    attack_type=req.attack_type,
+                    model=req.model,
+                    final_prompt_sent_to_llm=transcript_so_far + f"\nUser: {user_text}",
+                    raw_response="",
+                    displayed_response="[Multi-turn attack blocked mid-flow by guardrails.]",
+                    latency_ms=total_latency,
+                    token_count=total_tokens,
+                    success_heuristic=False,
+                    guardrail=report,
+                    system_prompt=system_prompt,
+                    conversation=conversation,
+                    technique_label=label,
+                    technique_family=family,
+                )
+
+        if transcript_so_far:
+            full_prompt = transcript_so_far + f"\n\nUser: {user_text}\n\nAssistant:"
+        else:
+            full_prompt = f"User: {user_text}\n\nAssistant:"
+
+        result = await ollama.generate(
+            req.model,
+            full_prompt,
+            system=system_prompt,
+            num_predict=llm_cfg.max_output_tokens,
+            temperature=llm_cfg.temperature,
+            top_p=llm_cfg.top_p,
+            top_k=llm_cfg.top_k,
+            repeat_penalty=llm_cfg.repeat_penalty,
+        )
+
+        conversation.append(ConversationTurn(role="user", content=user_text))
+        conversation.append(ConversationTurn(role="assistant", content=result.text))
+
+        transcript_so_far = full_prompt + " " + result.text
+        total_latency += result.latency_ms
+        total_tokens += result.token_count
+        last_result = result
+
+    displayed = last_result.text if last_result else ""
+    if req.mitigation_enabled and displayed:
+        out_verdict = guardrails.check_output(displayed, output_cfg)
+        if out_verdict.reasons:
+            report.reasons.extend(out_verdict.reasons)
+        if out_verdict.blocked:
+            report.output_blocked = True
+        if out_verdict.transformed_text is not None:
+            displayed = out_verdict.transformed_text
+
+    return AttackResponse(
+        attack_type=req.attack_type,
+        model=req.model,
+        final_prompt_sent_to_llm=transcript_so_far,
+        raw_response=last_result.text if last_result else "",
+        displayed_response=displayed,
+        latency_ms=round(total_latency, 2),
+        token_count=total_tokens,
+        success_heuristic=guardrails.attack_succeeded(displayed)
+        and not report.input_blocked
+        and not report.output_blocked,
+        guardrail=report,
+        system_prompt=system_prompt,
+        conversation=conversation,
+        technique_label=label,
+        technique_family=family,
+    )
+
+
+async def _run_tree_jailbreak(req: AttackRequest) -> AttackResponse:
+    """Branch search: try multiple scaffold variations and keep the best."""
+    report = GuardrailReport(enabled=req.mitigation_enabled)
+    recipe = attack_payloads.RECIPES["tree_jailbreaking"]
+    system_prompt = _compose_system_prompt(req)
+
+    branches = attack_payloads.build_tree_jailbreak_branches(req.user_prompt)
+    conversation: list[ConversationTurn] = []
+
+    best: AttackResponse | None = None
+    # Run each branch as a standalone single-turn attack (with the branch prompt
+    # treated as the payload already scaffolded).
+    for name, branch_payload in branches:
+        conversation.append(ConversationTurn(role="user", content=f"[{name}]\n{branch_payload}"))
+
+        branch_req = req.model_copy(update={"use_builder": False})
+        branch_resp = await _run_single_turn(branch_req, branch_payload)
+        conversation.append(
+            ConversationTurn(
+                role="assistant",
+                content=branch_resp.displayed_response or branch_resp.raw_response or "",
+            )
+        )
+        if best is None:
+            best = branch_resp
+        else:
+            # Prefer a branch that "succeeds" by heuristic and isn't blocked by guardrails.
+            if branch_resp.success_heuristic and not best.success_heuristic:
+                best = branch_resp
+
+        # Aggregate reasons for transparency.
+        if branch_resp.guardrail.reasons:
+            report.reasons.extend([f"{name}: {r}" for r in branch_resp.guardrail.reasons])
+
+    if best is None:
+        return AttackResponse(
+            attack_type=req.attack_type,
+            model=req.model,
+            final_prompt_sent_to_llm="[no branches executed]",
+            raw_response="",
+            displayed_response="",
+            latency_ms=0.0,
+            token_count=0,
+            success_heuristic=False,
+            guardrail=report,
+            system_prompt=system_prompt,
+            conversation=conversation,
+            technique_label=recipe.label,
+            technique_family=recipe.family,
+        )
+
+    # Return the best branch response but include the full branch exploration transcript.
+    best.conversation = conversation
+    best.technique_label = recipe.label
+    best.technique_family = recipe.family
+    best.system_prompt = system_prompt
+    best.guardrail = report if req.mitigation_enabled else best.guardrail
+    return best
+
 async def run_attack(req: AttackRequest) -> AttackResponse:
     # Multi-turn attacks handle their own flow.
     if req.attack_type == AttackType.CRESCENDO:
         return await _run_crescendo(req)
+    if req.attack_type == AttackType.LINEAR_JAILBREAKING:
+        recipe = attack_payloads.RECIPES["linear_jailbreaking"]
+        return await _run_generic_multi_turn(
+            req=req,
+            turns=attack_payloads.build_linear_jailbreak_turns(req.user_prompt),
+            label=recipe.label,
+            family=recipe.family,
+        )
+    if req.attack_type == AttackType.SEQUENTIAL_JAILBREAK:
+        recipe = attack_payloads.RECIPES["sequential_jailbreak"]
+        return await _run_generic_multi_turn(
+            req=req,
+            turns=attack_payloads.build_sequential_jailbreak_turns(req.user_prompt),
+            label=recipe.label,
+            family=recipe.family,
+        )
+    if req.attack_type == AttackType.BAD_LIKERT_JUDGE:
+        recipe = attack_payloads.RECIPES["bad_likert_judge"]
+        return await _run_generic_multi_turn(
+            req=req,
+            turns=attack_payloads.build_bad_likert_judge_turns(req.user_prompt),
+            label=recipe.label,
+            family=recipe.family,
+        )
+    if req.attack_type == AttackType.TREE_JAILBREAKING:
+        return await _run_tree_jailbreak(req)
 
     payload = _resolve_payload(req)
     return await _run_single_turn(req, payload)

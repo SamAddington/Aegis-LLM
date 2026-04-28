@@ -37,6 +37,14 @@ def _load_primer() -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@lru_cache(maxsize=1)
+def _load_beavertails_subset() -> dict:
+    path = settings.data_dir / "beavertails_subset.json"
+    if not path.exists():
+        raise FileNotFoundError(f"BeaverTails subset not found at {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 @router.get("/vulnerabilities")
 async def list_vulnerabilities() -> dict:
     return _load_registry()
@@ -74,3 +82,9 @@ async def get_primer_chapter(chapter_id: str) -> dict:
         if ch["id"].lower() == chapter_id.lower():
             return ch
     raise HTTPException(status_code=404, detail=f"Unknown primer chapter: {chapter_id}")
+
+
+@router.get("/beavertails/subset")
+async def get_beavertails_subset() -> dict:
+    """Offline subset used by the BeaverTails Evaluation Lab."""
+    return _load_beavertails_subset()

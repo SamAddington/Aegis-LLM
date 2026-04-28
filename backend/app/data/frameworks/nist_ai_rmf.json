@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "framework": "NIST AI RMF",
+    "version": "1.0",
+    "source_url": "https://www.nist.gov/itl/ai-risk-management-framework"
+  },
+  "nodes": [
+    { "id": "GOVERN", "name": "Govern" },
+    { "id": "MAP", "name": "Map" },
+    { "id": "MEASURE", "name": "Measure" },
+    { "id": "MANAGE", "name": "Manage" }
+  ]
+}
+

@@ -123,6 +123,7 @@ class LabSettings:
     show_raw_response_to_students: bool = True
     allow_custom_system_prompt: bool = True
     allow_rag_document_editing: bool = True
+    beavertails_extended_dataset_enabled: bool = False
     metrics_retention_days: int = 30
     classroom_banner: str = ""
     attack_cooldown_ms: int = 0
@@ -130,6 +131,7 @@ class LabSettings:
     def normalized(self) -> "LabSettings":
         self.metrics_retention_days = max(0, min(365, int(self.metrics_retention_days)))
         self.attack_cooldown_ms = max(0, min(60_000, int(self.attack_cooldown_ms)))
+        self.beavertails_extended_dataset_enabled = bool(self.beavertails_extended_dataset_enabled)
         return self
 
 

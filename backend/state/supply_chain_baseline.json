@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-04-28T20:24:37.681395+00:00",
+  "artifacts": [
+    {
+      "id": "artifact.guardrails",
+      "path": "C:\\Aegis-LLM\\backend\\app\\services\\guardrails.py",
+      "sha256": "52ee0401763e29f6c947307103c557dad4f4bbca01be6b53d88fa0dab761a011"
+    },
+    {
+      "id": "artifact.attack_payloads",
+      "path": "C:\\Aegis-LLM\\backend\\app\\services\\attack_payloads.py",
+      "sha256": "52aef130aaab11d0bfdd356b10d90e4cc258fe106d40d3c4325898020ffa0be3"
+    },
+    {
+      "id": "artifact.attack_orchestrator",
+      "path": "C:\\Aegis-LLM\\backend\\app\\services\\attack_orchestrator.py",
+      "sha256": "7ab4016bef8e42804851e902d3426169ec298c416a2f243da76c1aa253374cb2"
+    },
+    {
+      "id": "artifact.settings_store",
+      "path": "C:\\Aegis-LLM\\backend\\app\\services\\settings_store.py",
+      "sha256": "254080b2779ec23bbe843c9a0fdf5369957cb19f39ccbadcdfb4b21baac300bb"
+    },
+    {
+      "id": "artifact.vuln_registry",
+      "path": "C:\\Aegis-LLM\\backend\\app\\data\\vulnerabilities_registry.json",
+      "sha256": "0f35963bbe65c71c174ab14d5968024d26d37b7a6b51533dc09b380e35b0f6ee"
+    },
+    {
+      "id": "artifact.runtime_settings",
+      "path": "C:\\Aegis-LLM\\backend\\state\\runtime_settings.json",
+      "sha256": "ee03219573cf230cf9e35bf5dbaa2713647616876e6295e8b31333936dddbf0f"
+    }
+  ]
+}

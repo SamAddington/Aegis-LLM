@@ -1,11 +1,21 @@
 """API routers."""
 from . import (  # noqa: F401
+    audit,
     agentic,
     attack_lab,
     auth,
+    compliance,
     education,
     metrics_router,
+    output_sinks,
     settings_router,
     stress,
+    supply_chain,
     users,
+    vector_lab,
+    misinformation,
+    multi_agent,
+    beavertails_eval,
+    poisoning_lab,
+    privacy_lab,
 )

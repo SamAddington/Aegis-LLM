@@ -137,7 +137,18 @@
         { "term": "Format Hijack", "definition": "Demand a structured response (YAML/JSON) where one field forces the dangerous content. Schema-compliance pressure beats refusal reflex." },
         { "term": "Completion Priming", "definition": "End the attacker's prompt with tokens that naturally precede compliance ('Sure, here is...' or mid-YAML)." },
         { "term": "Perplexity Proxy", "definition": "Detector signal: real English has ~4.2 bits/char entropy; adversarial suffixes spike past 5.5-6.5." },
-        { "term": "Guard Model", "definition": "A second, safety-trained model that classifies inputs/outputs. In this lab the guard role is played by the regex pipeline in guardrails.py; production systems use Llama-Guard or ShieldGemma." }
+        { "term": "Guard Model", "definition": "A second, safety-trained model that classifies inputs/outputs (e.g., Llama-Guard, ShieldGemma). In this lab many 'guardrails' are transparent regex/heuristics, but the concept generalizes." },
+        { "term": "Output sink", "definition": "Any downstream system that *interprets* model output (HTML renderer, SQL executor, shell runner, templating engine). Output sinks are why LLM05 exists: model output is untrusted input." },
+        { "term": "RAG (Retrieval-Augmented Generation)", "definition": "A pipeline that retrieves documents (often from a vector store) and injects them into the model prompt as reference material." },
+        { "term": "Vector store", "definition": "A database of embeddings used for similarity search. If retrieval is manipulated, the model will see attacker-chosen documents." },
+        { "term": "Retrieval manipulation", "definition": "Attacks that cause poisoned documents to rank highly (keyword stuffing, semantic mimicry, metadata tricks), making the model ingest attacker-controlled context." },
+        { "term": "Provenance", "definition": "Where an artifact came from and whether it can be trusted. For LLM apps: models, prompts, tool registries, datasets, and container images all need provenance." },
+        { "term": "SBOM", "definition": "Software Bill of Materials: a list of dependencies and their versions. Used to audit supply chain risk and respond to CVEs." },
+        { "term": "SLSA", "definition": "Supply-chain Levels for Software Artifacts: a framework for build provenance and tamper resistance." },
+        { "term": "Signature verification", "definition": "Cryptographic validation that a tool/plugin/artifact was produced by a trusted publisher and has not been altered." },
+        { "term": "Citation requirement", "definition": "A mitigation for misinformation: require answers to cite trusted references and verify that citations match the content." },
+        { "term": "Overreliance", "definition": "A failure mode where humans or systems treat model output as authoritative without verification; the security impact can be fraud, compliance failure, or unsafe actions." },
+        { "term": "Multi-agent message tampering", "definition": "An attacker alters planner→executor messages in transit. Defenses include message signing/HMAC and strict verification (OWASP Agents ASI07)." }
       ]
     },
     {
@@ -146,11 +157,18 @@
       "summary": "Curated starting points.",
       "references": [
         { "label": "OWASP Top 10 for LLM Applications (2025)", "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/", "note": "The canonical taxonomy this lab maps to." },
+        { "label": "OWASP Top 10 for Agentic Applications (2026)", "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026", "note": "Agent-specific risks: tool misuse, memory poisoning, inter-agent comm, cascading failures." },
+        { "label": "NIST AI RMF 1.0", "url": "https://www.nist.gov/itl/ai-risk-management-framework", "note": "GOVERN / MAP / MEASURE / MANAGE. Aegis' Compliance Hub is aligned to this style of traceability." },
+        { "label": "NIST AI 600-1: Generative AI Profile", "url": "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence", "note": "GenAI-specific risk guidance aligned to AI RMF." },
         { "label": "Anthropic — Many-shot jailbreaking (2024)", "url": "https://www.anthropic.com/research/many-shot-jailbreaking", "note": "Origin paper for LLM11." },
         { "label": "NVIDIA Garak", "url": "https://github.com/NVIDIA/garak", "note": "Automated LLM red-team scanner. Good next step after this lab." },
+        { "label": "MITRE ATLAS", "url": "https://atlas.mitre.org/", "note": "ATT&CK-style matrix for ML attacks; useful for mapping tactics/techniques." },
+        { "label": "BeaverTails (PKU-Alignment, NeurIPS 2023)", "url": "https://github.com/PKU-Alignment/BeaverTails", "note": "Safety alignment dataset used by Aegis' BeaverTails Evaluation Lab (subset runner)." },
+        { "label": "SLSA (Supply-chain Levels for Software Artifacts)", "url": "https://slsa.dev/", "note": "Supply chain guidance relevant to LLM03 and agentic tool/plugin integrity." },
+        { "label": "Sigstore/cosign", "url": "https://docs.sigstore.dev/", "note": "Signing and verifying artifacts (containers, binaries) to enforce provenance." },
+        { "label": "OWASP GenAI Project", "url": "https://genai.owasp.org/", "note": "OWASP GenAI hub with risks, guidance, and updates." },
         { "label": "Zou et al. — Universal and Transferable Adversarial Attacks on Aligned LLMs (GCG, 2023)", "url": "https://arxiv.org/abs/2307.15043", "note": "Origin of the adversarial-suffix class (LLM04 in this lab)." },
-        { "label": "Microsoft — Crescendo multi-turn attack (2024)", "url": "https://arxiv.org/abs/2404.01833", "note": "Origin of LLM12." },
-        { "label": "MITRE ATLAS", "url": "https://atlas.mitre.org/", "note": "ATT&CK-style matrix for ML attacks." }
+        { "label": "Microsoft — Crescendo multi-turn attack (2024)", "url": "https://arxiv.org/abs/2404.01833", "note": "Origin of LLM12." }
       ]
     }
   ]

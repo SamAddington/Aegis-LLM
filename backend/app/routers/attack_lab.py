@@ -107,6 +107,46 @@ async def preview(attack_type: AttackType, goal: str = "") -> dict:
             "multi_turn": True,
             "turns": turns,
         }
+    if recipe.multi_turn and attack_type == AttackType.LINEAR_JAILBREAKING:
+        turns = attack_payloads.build_linear_jailbreak_turns(goal)
+        return {
+            "final_payload": "\n\n---\n\n".join(
+                f"[Turn {i + 1}] {t['content']}" for i, t in enumerate(turns)
+            ),
+            "technique": recipe.label,
+            "multi_turn": True,
+            "turns": turns,
+        }
+    if recipe.multi_turn and attack_type == AttackType.SEQUENTIAL_JAILBREAK:
+        turns = attack_payloads.build_sequential_jailbreak_turns(goal)
+        return {
+            "final_payload": "\n\n---\n\n".join(
+                f"[Turn {i + 1}] {t['content']}" for i, t in enumerate(turns)
+            ),
+            "technique": recipe.label,
+            "multi_turn": True,
+            "turns": turns,
+        }
+    if recipe.multi_turn and attack_type == AttackType.BAD_LIKERT_JUDGE:
+        turns = attack_payloads.build_bad_likert_judge_turns(goal)
+        return {
+            "final_payload": "\n\n---\n\n".join(
+                f"[Turn {i + 1}] {t['content']}" for i, t in enumerate(turns)
+            ),
+            "technique": recipe.label,
+            "multi_turn": True,
+            "turns": turns,
+        }
+    if recipe.multi_turn and attack_type == AttackType.TREE_JAILBREAKING:
+        branches = attack_payloads.build_tree_jailbreak_branches(goal)
+        return {
+            "final_payload": "\n\n---\n\n".join(
+                f"[{name}]\n{payload}" for name, payload in branches
+            ),
+            "technique": recipe.label,
+            "multi_turn": True,
+            "branches": [{"name": name, "payload": payload} for name, payload in branches],
+        }
     payload = attack_payloads.build_payload(attack_type.value, goal)
     return {
         "final_payload": payload,

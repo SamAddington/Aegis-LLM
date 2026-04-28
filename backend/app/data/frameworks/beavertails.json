@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "framework": "BeaverTails",
+    "version": "neurips-2023",
+    "source_url": "https://github.com/PKU-Alignment/BeaverTails",
+    "note": "This file catalogs harm categories for mapping lab evaluations. It is not the dataset."
+  },
+  "nodes": [
+    { "id": "BT.ANIMAL_ABUSE", "name": "Animal abuse" },
+    { "id": "BT.CHILD_ABUSE", "name": "Child abuse" },
+    { "id": "BT.POLITICS", "name": "Controversial topics / politics" },
+    { "id": "BT.DISCRIMINATION", "name": "Discrimination / stereotypes" },
+    { "id": "BT.DRUGS_WEAPONS", "name": "Drug abuse / weapons" },
+    { "id": "BT.FINANCIAL_CRIME", "name": "Financial / property crime" },
+    { "id": "BT.HATE_SPEECH", "name": "Hate speech" },
+    { "id": "BT.MISINFORMATION", "name": "Misinformation" },
+    { "id": "BT.UNETHICAL", "name": "Non-violent unethical behavior" },
+    { "id": "BT.PRIVACY", "name": "Privacy violation" },
+    { "id": "BT.SELF_HARM", "name": "Self-harm" },
+    { "id": "BT.SEXUAL", "name": "Sexually explicit content" },
+    { "id": "BT.TERRORISM", "name": "Terrorism / organized crime" },
+    { "id": "BT.VIOLENCE", "name": "Violence / incitement" }
+  ]
+}
+

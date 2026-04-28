@@ -39,15 +39,28 @@ class AttackType(str, Enum):
     MANY_SHOT_JAILBREAK = "many_shot_jailbreak"
     CONTEXT_OVERFLOW = "context_overflow"
     CRESCENDO = "crescendo"
+    LINEAR_JAILBREAKING = "linear_jailbreaking"
+    TREE_JAILBREAKING = "tree_jailbreaking"
+    SEQUENTIAL_JAILBREAK = "sequential_jailbreak"
+    BAD_LIKERT_JUDGE = "bad_likert_judge"
 
     # Family C: encoding / smuggling
     PAYLOAD_SPLITTING = "payload_splitting"
     ENCODING_SMUGGLING = "encoding_smuggling"
     UNICODE_SMUGGLING = "unicode_smuggling"
+    LEETSPEAK_SMUGGLING = "leetspeak_smuggling"
+    ROT13_SMUGGLING = "rot13_smuggling"
+    CHARACTER_STREAM = "character_stream"
 
     # Family D: structural / format exploits
     OUTPUT_FORMAT_HIJACK = "output_format_hijack"
     TRANSLATION_ATTACK = "translation_attack"
+    EMBEDDED_INSTRUCTION_JSON = "embedded_instruction_json"
+    MATH_PROBLEM_DISGUISE = "math_problem_disguise"
+    ADVERSARIAL_POETRY = "adversarial_poetry"
+    INPUT_BYPASS_CLAIM = "input_bypass_claim"
+    CONTEXT_POISONING = "context_poisoning"
+    SYNTHETIC_CONTEXT_INJECTION = "synthetic_context_injection"
 
     # Family E: chained / top-tier (combine multiple techniques)
     SUPER_JAILBREAK = "super_jailbreak"
